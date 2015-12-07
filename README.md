@@ -9,7 +9,6 @@ datasets.
 extern crate quandl;
 extern crate chrono;
 
-use quandl::quandl_request::QuandlRequest;
 use quandl::QuandlRequest;
 use chrono::NaiveDate;
 
