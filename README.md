@@ -1,7 +1,7 @@
 # Quandl
 
 [![Travis Build Status](https://travis-ci.org/frostly/quandl.svg?branch=master)](https://travis-ci.org/frostly/quandl)
-[![Coverage Status](https://coveralls.io/repos/frostly/quandl/badge.svg?branch=master)](https://coveralls.io/r/frostly/quandl?branch=master)
+[![Coverage Status](https://coveralls.io/repos/frostly/quandl/badge.svg?branch=master&service=github)](https://coveralls.io/github/frostly/quandl?branch=master)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE-MIT)
 [![Apache licensed](https://img.shields.io/badge/license-Apache-blue.svg)](./LICENSE-APACHE)
 [![crates.io](http://meritbadge.herokuapp.com/quandl)](https://crates.io/crates/quandl)
