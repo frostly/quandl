@@ -309,9 +309,9 @@ fn validate_date(start_date: &Option<NaiveDate>, end_date: &Option<NaiveDate>) -
 }
 
 /// Set query parameters for the given option if it is `Some(T)`
-pub fn set_query_pair<'a, T: Display>(query: &mut Vec<(&'a str, String)>,
-                                      key: &'a str,
-                                      option: &Option<T>) {
+fn set_query_pair<'a, T: Display>(query: &mut Vec<(&'a str, String)>,
+                                  key: &'a str,
+                                  option: &Option<T>) {
     if let Some(ref value) = *option {
         query.push((key, value.to_string()));
     }
