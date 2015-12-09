@@ -20,7 +20,6 @@ script:
   travis-cargo build &&
   travis-cargo test &&
   travis-cargo bench &&
-  rustdoc --test README.md -L target/debug/deps -L target/debug &&
   travis-cargo --only stable doc
 after_success:
 - travis-cargo --only stable doc-upload
