@@ -1,9 +1,9 @@
 [package]
 authors = ["Icelle Ku <icelleku@gmail.com>"]
-name = "quandl"
-version = "0.1.0"
 keywords = ["quandl"]
 license = "MIT/Apache-2.0"
+name = "quandl"
+version = "0.1.0"
 build = "build_readme_test.rs"
 
 [dependencies]
