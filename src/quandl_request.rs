@@ -294,7 +294,7 @@ impl DateInput for NaiveDate {
         quandl_request.end_date = Some(*self);
         Ok(())
     }
-             }
+}
 
 /// Compare two `NaiveDate`s and fail when `start_date` > `end_date`
 fn validate_date(start_date: &Option<NaiveDate>, end_date: &Option<NaiveDate>) -> Result<()> {
