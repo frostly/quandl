@@ -6,7 +6,7 @@
 [![Apache licensed](https://img.shields.io/badge/license-Apache-blue.svg)](./LICENSE-APACHE)
 [![crates.io](http://meritbadge.herokuapp.com/quandl)](https://crates.io/crates/quandl)
 
-[Documentation](https://open.frostly.com/quandl)
+[Documentation](http://open.frostly.com/quandl)
 
 # Overview
 
