@@ -26,5 +26,5 @@ after_success:
 - travis-cargo coveralls --no-sudo --verify
 env:
   global:
-    - TRAVIS_CARGO_NIGHTLY_FEATURE="clippy test-quandl-api"
+    - TRAVIS_CARGO_NIGHTLY_FEATURE="clippy skeptic test-quandl-api"
     - secure: k9FwpBXnrJz8lboIHm9/UKxQ2UG9vdGKMaZ2XGYxrStYx/OqmFOPxJsXBOiVZZz8aje9aVh6R86FQtX/QvXMPmisPpmxP3tJ2LQAu/38z+lLT4jTyaL1qOC5l5jlw38fcTuobcuxp4JeR4MdY73W2amptCPtW1oB0s+CZi+sBqavqicATWNWmUH6HCSN8wYqf+cz27FjrSKsignCMfJVrknBs1gLAdRrpuKJGYQ+S/DeOh0xCkpkrLo+GdqfIbcOitT0cEQd9ojEyChs2AczBNzpyoB1te8QQ5l3P+k/EnL9RLH+43nstYCd/axTB5r6jdgsj1sWB1eS8HpGv/P1ezhQs+qJXgYvFbPUFLXHvy6Y+m0yH37VxaBrjrc7EX378KYI/sfMXTcd4LfO+F5G58iU3rUPmFiZPkpBzvIazOxtcQgp8E0ndCXHklRfmiUWe3Q2M+3d4OQSg8+ckMnGMpEoG26c1AdSl8wC7ng8wvfQ9gOvFxZmFRSqB6J1LFxHguqIlNa0nrMRLrUk7NcUlvYZ9Kh420eIvIJctqNNPG6J7RLl7XnSeHKDOayesFKCI6r7IgwFhTHf1KolgTDnOEQO9yrFQ4Pec75SZMDpmYyq/nTMhhsCN1tuqAaCCcPh6xAq5K/NsRqpXXTK1PWgufGm1Z/uqLb2hvoZaiGIxk0=
