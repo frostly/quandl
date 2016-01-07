@@ -4,6 +4,7 @@ use hyper;
 use serde_json;
 use error::{Error, Result};
 use chrono::NaiveDate;
+use super::JsonValue;
 
 /// use v3 of Quandl API
 const QUANDL_BASE_URL: &'static str = "https://www.quandl.com/api/v3/datasets";
@@ -241,19 +242,19 @@ impl QuandlRequest {
     }
 
     /// Make a request to the Quandl API with the specified parameters
-    pub fn run(&self) -> Result<serde_json::Value> {
+    pub fn run(&self) -> Result<JsonValue> {
         let client = hyper::Client::new();
         let url = self.get_url();
         let res = try!(client.get(url).send());
 
         match res.status {
             hyper::Ok => {
-                let data: serde_json::Value = try!(serde_json::from_reader(res));
+                let data: JsonValue = try!(serde_json::from_reader(res));
                 Ok(data)
             }
             // something happened, quandl rejected the request
             status => {
-                let data: serde_json::Value = try!(serde_json::from_reader(res));
+                let data: JsonValue = try!(serde_json::from_reader(res));
                 Err(Error::Quandl(format!("quandl request failed with code `{}` and response: \
                                            {:?}",
                                           status,
