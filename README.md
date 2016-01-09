@@ -1,12 +1,10 @@
 # Quandl
-
-[![Travis Build Status](https://travis-ci.org/frostly/quandl.svg?branch=master)](https://travis-ci.org/frostly/quandl)
-[![Coverage Status](https://coveralls.io/repos/frostly/quandl/badge.svg?branch=master&service=github)](https://coveralls.io/github/frostly/quandl?branch=master)
+[![Travis Build Status](https://img.shields.io/travis/frostly/quandl.svg)](https://travis-ci.org/frostly/quandl)
+[![Documentation](https://img.shields.io/badge/docs-latest-C9893D.svg)](https://open.frostly.com/quandl)
+[![Coverage Status](https://img.shields.io/coveralls/frostly/quandl.svg)](https://coveralls.io/github/frostly/quandl?branch=master)
+[![crates.io](https://img.shields.io/crates/v/quandl.svg)](https://crates.io/crates/quandl)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE-MIT)
 [![Apache licensed](https://img.shields.io/badge/license-Apache-blue.svg)](./LICENSE-APACHE)
-[![crates.io](http://meritbadge.herokuapp.com/quandl)](https://crates.io/crates/quandl)
-
-[Documentation](http://open.frostly.com/quandl)
 
 # Overview
 
