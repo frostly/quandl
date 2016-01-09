@@ -23,10 +23,13 @@ extern crate hyper;
 #[macro_use] extern crate quick_error;
 extern crate chrono;
 
+pub use quandl::Quandl;
 pub use quandl_request::*;
 pub use error::{Error, Result};
 pub use serde_json::Value as JsonValue;
 
+/// Handles common information across requests.
+pub mod quandl;
 /// Handles building and sending requests to Quandl
 pub mod quandl_request;
 /// Errors

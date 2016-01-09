@@ -17,19 +17,20 @@ datasets.
 extern crate quandl;
 extern crate chrono;
 
-use quandl::QuandlRequest;
+use quandl::Quandl;
 use chrono::NaiveDate;
 
 fn main() {
   // basic request
-  let _ = QuandlRequest::new("WIKI", "AAPL")
+  let q = Quandl::new();
+  let _ = q.new_request("WIKI", "AAAPL")
     .rows(5)
     .run();
 
   // specify some dates
   // Note: setting the start and end dates could fail (parsing error or inconsistency)
   // so when set, a Result is returned
-  let _ = QuandlRequest::new("WIKI", "AAPL")
+  let _ = q.new_request("WIKI", "AAPL")
     .start_date("2015-11-10")
     .unwrap()
     .end_date("2015-11-12")
@@ -38,7 +39,7 @@ fn main() {
 
   // pass a NaiveDate instead of a &str
   let d = NaiveDate::from_ymd(2015, 11, 20);
-  let _ = QuandlRequest::new("WIKI", "AAPL")
+  let _ = q.new_request("WIKI", "AAPL")
     .start_date(&d)
     .unwrap()
     .run();
