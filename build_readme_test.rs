@@ -1,11 +1,11 @@
-#[cfg(feature = "skeptic")]
+#[cfg(all(feature = "skeptic", feature = "test-quandl-api"))]
 extern crate skeptic;
 
-#[cfg(feature = "skeptic")]
+#[cfg(all(feature = "skeptic", feature = "test-quandl-api"))]
 fn main() {
     skeptic::generate_doc_tests(&["README.md"]);
 }
 
 // do nothing unless skeptic feature is present
-#[cfg(not(feature = "skeptic"))]
+#[cfg(not(all(feature = "skeptic", feature = "test-quandl-api")))]
 fn main() {}

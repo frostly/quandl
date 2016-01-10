@@ -1,12 +1,10 @@
 # Quandl
-
-[![Travis Build Status](https://travis-ci.org/frostly/quandl.svg?branch=master)](https://travis-ci.org/frostly/quandl)
-[![Coverage Status](https://coveralls.io/repos/frostly/quandl/badge.svg?branch=master&service=github)](https://coveralls.io/github/frostly/quandl?branch=master)
+[![Travis Build Status](https://img.shields.io/travis/frostly/quandl.svg)](https://travis-ci.org/frostly/quandl)
+[![Documentation](https://img.shields.io/badge/docs-latest-C9893D.svg)](https://open.frostly.com/quandl)
+[![Coverage Status](https://img.shields.io/coveralls/frostly/quandl.svg)](https://coveralls.io/github/frostly/quandl?branch=master)
+[![crates.io](https://img.shields.io/crates/v/quandl.svg)](https://crates.io/crates/quandl)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE-MIT)
 [![Apache licensed](https://img.shields.io/badge/license-Apache-blue.svg)](./LICENSE-APACHE)
-[![crates.io](http://meritbadge.herokuapp.com/quandl)](https://crates.io/crates/quandl)
-
-[Documentation](http://open.frostly.com/quandl)
 
 # Overview
 
@@ -52,10 +50,10 @@ fn main() {
 Some notes about the different testing options:
 
 - `cargo test` will run all tests that don't call the Quandl API.
-- `cargo test --features skeptic` will run tests on `README.md`. This will make calls to the Quandl
 API.
 - `cargo test --features test-quandl-api` will include tests that call the Quandl API.
-- `cargo test --features "skeptic test-quandl-api"` will run all tests.
+- `cargo test --features "skeptic test-quandl-api"` will run all tests including the tests in this
+README file.
 
 [clippy](https://github.com/Manishearth/rust-clippy) is also run as part of the nightly build on travis.
 
