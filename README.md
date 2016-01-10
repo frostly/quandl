@@ -50,10 +50,10 @@ fn main() {
 Some notes about the different testing options:
 
 - `cargo test` will run all tests that don't call the Quandl API.
-- `cargo test --features skeptic` will run tests on `README.md`. This will make calls to the Quandl
 API.
 - `cargo test --features test-quandl-api` will include tests that call the Quandl API.
-- `cargo test --features "skeptic test-quandl-api"` will run all tests.
+- `cargo test --features "skeptic test-quandl-api"` will run all tests including the tests in this
+README file.
 
 [clippy](https://github.com/Manishearth/rust-clippy) is also run as part of the nightly build on travis.
 
