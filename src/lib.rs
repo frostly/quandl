@@ -25,6 +25,7 @@ extern crate chrono;
 
 pub use quandl_request::*;
 pub use error::{Error, Result};
+pub use serde_json::Value as JsonValue;
 
 /// Handles building and sending requests to Quandl
 pub mod quandl_request;
