@@ -27,6 +27,7 @@ pub use quandl::Quandl;
 pub use quandl_request::*;
 pub use error::{Error, Result};
 pub use serde_json::Value as JsonValue;
+pub use chrono::NaiveDate as NaiveDate;
 
 /// Handles common information across requests.
 pub mod quandl;
