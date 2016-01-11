@@ -3,9 +3,7 @@ use std::fmt::{self, Display, Formatter, Debug};
 use hyper;
 use serde_json;
 use error::{Error, Result};
-use chrono::NaiveDate;
-use super::JsonValue;
-use quandl::Quandl;
+use super::{NaiveDate, JsonValue, Quandl};
 
 /// use v3 of Quandl API
 const QUANDL_BASE_URL: &'static str = "https://www.quandl.com/api/v3/datasets";
@@ -278,7 +276,7 @@ pub trait DateInput {
     fn set_start_date(&self, quandl_request: &mut QuandlRequest) -> Result<()>;
     /// Set the `end_date` for `QuandlRequest`.
     fn set_end_date(&self, quandl_request: &mut QuandlRequest) -> Result<()>;
-    }
+}
 
 impl DateInput for str {
     fn set_start_date(&self, quandl_request: &mut QuandlRequest) -> Result<()> {
@@ -329,8 +327,7 @@ fn set_query_pair<'a, T: Display>(query: &mut Vec<(&'a str, String)>,
 mod tests {
     use super::*;
     use url::Url;
-    use chrono::NaiveDate;
-    use quandl::Quandl;
+    use super::super::{NaiveDate, Quandl};
 
     fn new_quandl_request(quandl: &Quandl) -> QuandlRequest {
         quandl.new_request("WIKI", "AAPL")

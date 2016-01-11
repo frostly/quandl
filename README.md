@@ -15,10 +15,8 @@ datasets.
 
 ```rust
 extern crate quandl;
-extern crate chrono;
 
-use quandl::Quandl;
-use chrono::NaiveDate;
+use quandl::{Quandl, NaiveDate};
 
 fn main() {
   // basic request
