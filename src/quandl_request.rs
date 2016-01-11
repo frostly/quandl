@@ -1,39 +1,62 @@
 use url::Url;
-use std::fmt::{Display, Formatter};
+use std::fmt::{self, Display, Formatter, Debug};
 use hyper;
 use serde_json;
 use error::{Error, Result};
 use chrono::NaiveDate;
 use super::JsonValue;
+use quandl::Quandl;
 
 /// use v3 of Quandl API
 const QUANDL_BASE_URL: &'static str = "https://www.quandl.com/api/v3/datasets";
 
 /// Parameters for the request to Quandl API
-#[derive(Debug, PartialEq)]
-pub struct QuandlRequest {
-    /// Quandl API key. Used for premium databases and/or increased usage limits
-    api_key: Option<String>,
+pub struct QuandlRequest<'a> {
+    /// Reference to Quandl struct. This information will be available for all
+    /// Quandl requests.
+    pub quandl: &'a Quandl,
     /// The unique database code on Quandl (ex. WIKI)
-    database_code: String,
+    pub database_code: String,
     /// The unique dataset code on Quandl (ex. APPL)
-    dataset_code: String,
-    limit: Option<u64>,
-    rows: Option<u64>,
+    pub dataset_code: String,
+    /// You can use `limit=n` to get only the first `n` rows of your dataset. Use `limit=1` to get
+    /// the latest observation for any dataset.
+    pub limit: Option<u64>,
+    /// You can use `rows=n` to get only the first `n` rows of your dataset. Use `rows=1` to get
+    /// the latest observation for any dataset.
+    pub rows: Option<u64>,
     /// Request specific column.
-    column_index: Option<u64>,
+    pub column_index: Option<u64>,
     /// Retrieve data within a specific date range, by setting start dates for your query.
     /// Set the start date with: start_date=yyyy-mm-dd
-    start_date: Option<NaiveDate>,
+    pub start_date: Option<NaiveDate>,
     /// Retrieve data within a specific date range, by setting end dates for your query.
     /// Set the end date with: end_date=yyyy-mm-dd
-    end_date: Option<NaiveDate>,
+    pub end_date: Option<NaiveDate>,
     /// Sort in ascending or descending order.
-    order: Option<Order>,
-    ///Parameters to indicate the desired frequency.
-    collapse: Option<Collapse>,
-    ///Perform calculations on your data prior to downloading.
-    transform: Option<Transform>,
+    pub order: Option<Order>,
+    /// Parameters to indicate the desired frequency.
+    pub collapse: Option<Collapse>,
+    /// Perform calculations on your data prior to downloading.
+    pub transform: Option<Transform>,
+}
+
+impl<'a> Debug for QuandlRequest<'a> {
+    fn fmt(&self, fmt: &mut Formatter) -> fmt::Result {
+        fmt.debug_struct("QuandlRequest")
+           .field("quandl", &self.quandl)
+           .field("database_code", &self.database_code)
+           .field("dataset_code", &self.dataset_code)
+           .field("limit", &self.limit)
+           .field("rows", &self.rows)
+           .field("column_index", &self.column_index)
+           .field("start_date", &self.start_date)
+           .field("end_date", &self.end_date)
+           .field("order", &self.order)
+           .field("collapse", &self.collapse)
+           .field("transform", &self.transform)
+           .finish()
+    }
 }
 
 /// Sort in ascending or descending order.
@@ -48,7 +71,7 @@ pub enum Order {
 /// Converts `Order` enum variants to what is expected as input parameters in the URL
 /// to the Quandl API
 impl Display for Order {
-    fn fmt(&self, f: &mut Formatter) -> ::std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f,
                "{}",
                match *self {
@@ -121,59 +144,27 @@ impl Display for Transform {
     }
 }
 
-impl Default for QuandlRequest {
-    fn default() -> QuandlRequest {
-        QuandlRequest {
-            api_key: None,
-            database_code: String::from(""),
-            dataset_code: String::from(""),
-            limit: None,
-            rows: None,
-            column_index: None,
-            start_date: None,
-            end_date: None,
-            order: None,
-            collapse: None,
-            transform: None,
-        }
-    }
-}
-
-impl QuandlRequest {
+impl<'a> QuandlRequest<'a> {
     /// Creates a new `QuandlRequest` using the specified database_code and dataset code.
     /// All other parameters as taken from the default implementation, setting the optional
     /// parameters to `None`.
-    pub fn new(database_code: &str, dataset_code: &str) -> QuandlRequest {
-        QuandlRequest {
-            database_code: String::from(database_code),
-            dataset_code: String::from(dataset_code),
-            ..Default::default()
-        }
-    }
-
-    /// Quandl API key. Used for premium databases and/or increased usage limits.
-    pub fn api_key(mut self, key: String) -> QuandlRequest {
-        self.api_key = Some(key);
-        self
-    }
-
     /// You can use `limit=n` to get only the first `n` rows of your dataset. Use `limit=1` to get
     /// the latest observation for any dataset.
-    pub fn limit(mut self, limit: u64) -> QuandlRequest {
+    pub fn limit(mut self, limit: u64) -> QuandlRequest<'a> {
         self.limit = Some(limit);
         self
     }
 
     /// You can use `rows=n` to get only the first `n` rows of your dataset. Use `rows=1` to get
     /// the latest observation for any dataset.
-    pub fn rows(mut self, rows: u64) -> QuandlRequest {
+    pub fn rows(mut self, rows: u64) -> QuandlRequest<'a> {
         self.rows = Some(rows);
         self
     }
 
     /// Request a specific column by passing the `column_index=n` parameter. Column 0 is the
     /// date column and is always returned. Data begins at column 1.
-    pub fn column_index(mut self, indx: u64) -> QuandlRequest {
+    pub fn column_index(mut self, indx: u64) -> QuandlRequest<'a> {
         self.column_index = Some(indx);
         self
     }
@@ -181,20 +172,20 @@ impl QuandlRequest {
 
     /// Retrieve data within a specific date range, by setting start date for your query.
     /// Takes either a `&str` in the format of `yyyy-mm-dd` or a `chrono::NaiveDate` as input.
-    pub fn start_date<T: ?Sized + DateInput>(mut self, date: &T) -> Result<QuandlRequest> {
+    pub fn start_date<T: ?Sized + DateInput>(mut self, date: &T) -> Result<QuandlRequest<'a>> {
         try!(date.set_start_date(&mut self));
         Ok(self)
     }
 
     /// Retrieve data within a specific date range, by setting end date for your query.
     /// Takes either a `&str` in the format of `yyyy-mm-dd` or a `chrono::NaiveDate` as input.
-    pub fn end_date<T: ?Sized + DateInput>(mut self, date: &T) -> Result<QuandlRequest> {
+    pub fn end_date<T: ?Sized + DateInput>(mut self, date: &T) -> Result<QuandlRequest<'a>> {
         try!(date.set_end_date(&mut self));
         Ok(self)
     }
 
     /// Select the sort order. The default sort order is `Desc`.
-    pub fn order(mut self, order: Order) -> QuandlRequest {
+    pub fn order(mut self, order: Order) -> QuandlRequest<'a> {
         self.order = Some(order);
         self
     }
@@ -204,7 +195,7 @@ impl QuandlRequest {
     /// to monthly, you will get a sample of the original dataset where the observation for each
     /// month is the last data point available for that month. Set collapse with:
     /// `collapse=none|daily|weekly|monthly|quarterly|annual`.
-    pub fn collapse(mut self, collapse: Collapse) -> QuandlRequest {
+    pub fn collapse(mut self, collapse: Collapse) -> QuandlRequest<'a> {
         self.collapse = Some(collapse);
         self
     }
@@ -213,7 +204,7 @@ impl QuandlRequest {
     /// available are row-on-row change, percentage change, cumulative sum, and normalize
     /// (set starting value at 100). Set the transform parameter with:
     /// `transform=none|diff|rdiff|cumul|normalize`.
-    pub fn transform(mut self, transform: Transform) -> QuandlRequest {
+    pub fn transform(mut self, transform: Transform) -> QuandlRequest<'a> {
         self.transform = Some(transform);
         self
     }
@@ -227,7 +218,7 @@ impl QuandlRequest {
                                .unwrap();
         let mut query: Vec<(&str, String)> = Vec::new();
 
-        set_query_pair(&mut query, "api_key", &self.api_key);
+        set_query_pair(&mut query, "api_key", &self.quandl.api_key);
         set_query_pair(&mut query, "limit", &self.limit);
         set_query_pair(&mut query, "rows", &self.rows);
         set_query_pair(&mut query, "column_index", &self.column_index);
@@ -243,9 +234,8 @@ impl QuandlRequest {
 
     /// Make a request to the Quandl API with the specified parameters
     pub fn run(&self) -> Result<JsonValue> {
-        let client = hyper::Client::new();
         let url = self.get_url();
-        let res = try!(client.get(url).send());
+        let res = try!(self.quandl.http_client.get(url).send());
 
         match res.status {
             hyper::Ok => {
@@ -262,6 +252,23 @@ impl QuandlRequest {
             }
         }
     }
+
+    /// Create a default QuandlRequest
+    pub fn default(quandl: &'a Quandl) -> QuandlRequest<'a> {
+        QuandlRequest {
+            quandl: quandl,
+            database_code: String::from(""),
+            dataset_code: String::from(""),
+            limit: None,
+            rows: None,
+            column_index: None,
+            start_date: None,
+            end_date: None,
+            order: None,
+            collapse: None,
+            transform: None,
+        }
+    }
 }
 
 /// Allow for multiple types to be used as input to the `start_date` and `end_date` `QuandlRequest`
@@ -271,7 +278,7 @@ pub trait DateInput {
     fn set_start_date(&self, quandl_request: &mut QuandlRequest) -> Result<()>;
     /// Set the `end_date` for `QuandlRequest`.
     fn set_end_date(&self, quandl_request: &mut QuandlRequest) -> Result<()>;
-}
+    }
 
 impl DateInput for str {
     fn set_start_date(&self, quandl_request: &mut QuandlRequest) -> Result<()> {
@@ -323,56 +330,64 @@ mod tests {
     use super::*;
     use url::Url;
     use chrono::NaiveDate;
+    use quandl::Quandl;
 
-    fn new_quandl_request() -> QuandlRequest {
-        QuandlRequest::new("WIKI", "AAPL")
+    fn new_quandl_request(quandl: &Quandl) -> QuandlRequest {
+        quandl.new_request("WIKI", "AAPL")
     }
 
     #[test]
     fn test_new_quandl_request() {
-        let q = new_quandl_request();
-        assert_eq!(q.database_code, String::from("WIKI"));
-        assert_eq!(q.dataset_code, String::from("AAPL"));
-        assert_eq!(q.limit, None);
+        let q = Quandl::new();
+        let qr = new_quandl_request(&q);
+        assert_eq!(qr.database_code, String::from("WIKI"));
+        assert_eq!(qr.dataset_code, String::from("AAPL"));
+        assert_eq!(qr.limit, None);
     }
 
     #[test]
     fn test_limit() {
-        let q = new_quandl_request().limit(12);
-        assert_eq!(q.limit, Some(12));
+        let q = Quandl::new();
+        let qr = new_quandl_request(&q).limit(12);
+        assert_eq!(qr.limit, Some(12));
     }
 
     #[test]
     fn test_rows() {
-        let q = new_quandl_request().rows(2);
-        assert_eq!(q.rows, Some(2));
+        let q = Quandl::new();
+        let qr = new_quandl_request(&q).rows(2);
+        assert_eq!(qr.rows, Some(2));
     }
 
     #[test]
     fn test_column_index() {
-        let q = new_quandl_request().column_index(0);
-        assert_eq!(q.column_index, Some(0));
+        let q = Quandl::new();
+        let qr = new_quandl_request(&q).column_index(0);
+        assert_eq!(qr.column_index, Some(0));
     }
 
     #[test]
     fn test_order() {
         use super::Order::*;
-        let q = new_quandl_request().order(Asc);
-        assert_eq!(q.order, Some(Asc));
+        let q = Quandl::new();
+        let qr = new_quandl_request(&q).order(Asc);
+        assert_eq!(qr.order, Some(Asc));
     }
 
     #[test]
     fn test_collapse() {
         use super::Collapse::*;
-        let q = new_quandl_request().collapse(Daily);
-        assert_eq!(q.collapse, Some(Daily));
+        let q = Quandl::new();
+        let qr = new_quandl_request(&q).collapse(Daily);
+        assert_eq!(qr.collapse, Some(Daily));
     }
 
     #[test]
     fn test_transform() {
         use super::Transform::*;
-        let q = new_quandl_request().transform(Rdiff);
-        assert_eq!(q.transform, Some(Rdiff));
+        let q = Quandl::new();
+        let qr = new_quandl_request(&q).transform(Rdiff);
+        assert_eq!(qr.transform, Some(Rdiff));
     }
 
     #[test]
@@ -382,73 +397,80 @@ mod tests {
                      0&order=asc&collapse=daily&transform=normalize";
         let url = Url::parse(u_str).unwrap();
 
-        let q = new_quandl_request()
-                    .order(Order::Asc)
-                    .limit(10u64)
-                    .collapse(Collapse::Daily)
-                    .rows(1u64)
-                    .column_index(25u64)
-                    .transform(Transform::Normalize)
-                    .start_date("2015-02-10")
-                    .unwrap()
-                    .end_date("2015-03-10")
-                    .unwrap();
-        assert_eq!(url, q.get_url());
+        let q = Quandl::new();
+        let qr = new_quandl_request(&q)
+                     .order(Order::Asc)
+                     .limit(10u64)
+                     .collapse(Collapse::Daily)
+                     .rows(1u64)
+                     .column_index(25u64)
+                     .transform(Transform::Normalize)
+                     .start_date("2015-02-10")
+                     .unwrap()
+                     .end_date("2015-03-10")
+                     .unwrap();
+        assert_eq!(qr.get_url(), url);
     }
 
     #[test]
     fn test_validate_date_err() {
         // from str
-        let q = new_quandl_request()
-                    .start_date("2015-02-10")
-                    .unwrap()
-                    .end_date("2015-01-10");
+        let q = Quandl::new();
+        let qr = new_quandl_request(&q)
+                     .start_date("2015-02-10")
+                     .unwrap()
+                     .end_date("2015-01-10");
 
-        println!("{:?}", q);
-        assert_eq!(&q.is_err(), &true);
+        println!("{:?}", qr);
+        assert_eq!(&qr.is_err(), &true);
 
         // from NaiveDate
-        let q = new_quandl_request()
-                    .start_date(&NaiveDate::from_ymd(2015, 02, 10))
-                    .unwrap()
-                    .end_date(&NaiveDate::from_ymd(2015, 01, 10));
+        let q = Quandl::new();
+        let qr = new_quandl_request(&q)
+                     .start_date(&NaiveDate::from_ymd(2015, 02, 10))
+                     .unwrap()
+                     .end_date(&NaiveDate::from_ymd(2015, 01, 10));
 
-        println!("{:?}", q);
-        assert_eq!(&q.is_err(), &true);
-
-        // from NaiveDate + str
-        let q = new_quandl_request()
-                    .start_date(&NaiveDate::from_ymd(2015, 02, 10))
-                    .unwrap()
-                    .end_date("2015-01-10");
-
-        println!("{:?}", q);
-        assert_eq!(&q.is_err(), &true);
+        println!("{:?}", qr);
+        assert_eq!(&qr.is_err(), &true);
 
         // from NaiveDate + str
-        let q = new_quandl_request()
-                    .end_date(&NaiveDate::from_ymd(2015, 02, 10))
-                    .unwrap()
-                    .start_date("2015-03-10");
+        let q = Quandl::new();
+        let qr = new_quandl_request(&q)
+                     .start_date(&NaiveDate::from_ymd(2015, 02, 10))
+                     .unwrap()
+                     .end_date("2015-01-10");
 
-        println!("{:?}", q);
-        assert_eq!(&q.is_err(), &true);
+        println!("{:?}", qr);
+        assert_eq!(&qr.is_err(), &true);
+
+        // from NaiveDate + str
+        let q = Quandl::new();
+        let qr = new_quandl_request(&q)
+                     .end_date(&NaiveDate::from_ymd(2015, 02, 10))
+                     .unwrap()
+                     .start_date("2015-03-10");
+
+        println!("{:?}", qr);
+        assert_eq!(&qr.is_err(), &true);
 
         // correct params should not have an error
-        let q = new_quandl_request()
-                    .start_date(&NaiveDate::from_ymd(2015, 02, 10))
-                    .unwrap()
-                    .end_date("2015-03-10");
+        let q = Quandl::new();
+        let qr = new_quandl_request(&q)
+                     .start_date(&NaiveDate::from_ymd(2015, 02, 10))
+                     .unwrap()
+                     .end_date("2015-03-10");
 
-        println!("{:?}", q);
-        assert_eq!(&q.is_ok(), &true);
+        println!("{:?}", qr);
+        assert_eq!(&qr.is_ok(), &true);
     }
 
     #[cfg(feature = "test-quandl-api")]
     #[test]
     fn test_quandl_not_found_error() {
         use error::Error;
-        let res = QuandlRequest::new("WIKI", "AAAPL").rows(1u64).run();
+        let q = Quandl::new();
+        let res = q.new_request("WIKI", "AAAPL").rows(1u64).run();
 
         assert_eq!(&res.is_err(), &true);
         match res.unwrap_err() {
@@ -460,7 +482,8 @@ mod tests {
     #[cfg(feature = "test-quandl-api")]
     #[test]
     fn test_quandl_works() {
-        let res = QuandlRequest::new("WIKI", "AMZN").rows(1u64).run();
+        let q = Quandl::new();
+        let res = new_quandl_request(&q).rows(1u64).run();
         if res.is_err() {
             panic!("quandl req failed: {:?}", res)
         }
