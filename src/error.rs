@@ -1,6 +1,7 @@
 use hyper;
 use serde_json;
 use chrono;
+use url;
 
 /// Result type often returned from methods that can have quandl `Error`s.
 pub type Result<T> = ::std::result::Result<T, Error>;
@@ -39,6 +40,13 @@ quick_error! {
         Date(err: String) {
             description("date error")
             display("date error: {}", err)
+        }
+        /// Url Error
+        Url(err: url::ParseError) {
+            from()
+            description("url parse error")
+            display("url parse error: {}", err)
+            cause(err)
         }
     }
 }

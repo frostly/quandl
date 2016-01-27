@@ -208,12 +208,11 @@ impl<'a> QuandlRequest<'a> {
     }
 
     /// Build the URL to send to the Quandl API
-    fn get_url(&self) -> Url {
-        let mut url: Url = Url::parse(&format!("{}/{}/{}/data.json",
-                                               QUANDL_BASE_URL,
-                                               self.database_code,
-                                               self.dataset_code))
-                               .unwrap();
+    fn get_url(&self) -> Result<Url> {
+        let mut url: Url = try!(Url::parse(&format!("{}/{}/{}/data.json",
+                                                    QUANDL_BASE_URL,
+                                                    self.database_code,
+                                                    self.dataset_code)));
         let mut query: Vec<(&str, String)> = Vec::new();
 
         set_query_pair(&mut query, "api_key", &self.quandl.api_key);
@@ -227,13 +226,13 @@ impl<'a> QuandlRequest<'a> {
         set_query_pair(&mut query, "transform", &self.transform);
         url.set_query_from_pairs(query);
 
-        url
+        Ok(url)
     }
 
     /// Make a request to the Quandl API with the specified parameters
     pub fn run(&self) -> Result<JsonValue> {
         let url = self.get_url();
-        let res = try!(self.quandl.http_client.get(url).send());
+        let res = try!(self.quandl.http_client.get(try!(url)).send());
 
         match res.status {
             hyper::Ok => {
