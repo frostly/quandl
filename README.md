@@ -21,7 +21,7 @@ use quandl::{Quandl, NaiveDate};
 fn main() {
   // basic request
   let q = Quandl::new();
-  let _ = q.new_request("WIKI", "AAAPL")
+  let _ = q.new_request("WIKI", "AAPL")
     .rows(5)
     .run();
 
