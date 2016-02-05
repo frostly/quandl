@@ -35,3 +35,9 @@ pub mod quandl;
 pub mod quandl_request;
 /// Errors
 pub mod error;
+
+/// Avoid exposing quandl.http_client to public but allow code inside the crate to use it
+/// via this trait
+trait HttpClient {
+    fn http_client(&self) -> &hyper::Client;
+}

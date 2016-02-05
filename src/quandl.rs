@@ -1,11 +1,12 @@
 use std::fmt::{self, Formatter, Debug};
 use hyper;
 use super::QuandlRequest;
+use HttpClient;
 
 /// Parameters for Quandl
 pub struct Quandl {
     /// Http client
-    pub http_client: hyper::Client,
+    http_client: hyper::Client,
     /// Quandl API key. Used for premium databases and/or increased usage limits
     pub api_key: Option<String>,
 }
@@ -48,5 +49,11 @@ impl Debug for Quandl {
         fmt.debug_struct("QuandlRequest")
            .field("api_key", &self.api_key)
            .finish()
+    }
+}
+
+impl HttpClient for Quandl {
+    fn http_client(&self) -> &hyper::Client {
+        &self.http_client
     }
 }

@@ -232,7 +232,7 @@ impl<'a> QuandlRequest<'a> {
     /// Make a request to the Quandl API with the specified parameters
     pub fn run(&self) -> Result<JsonValue> {
         let url = self.get_url();
-        let res = try!(self.quandl.http_client.get(try!(url)).send());
+        let res = try!(self.quandl.http_client().get(try!(url)).send());
 
         match res.status {
             hyper::Ok => {
