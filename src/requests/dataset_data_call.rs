@@ -3,13 +3,14 @@ use std::fmt::{self, Display, Formatter, Debug};
 use hyper;
 use serde_json;
 use error::{Error, Result};
-use super::{NaiveDate, JsonValue, Quandl};
+use {NaiveDate, JsonValue, Quandl};
+use HttpClient;
 
 /// use v3 of Quandl API
 const QUANDL_BASE_URL: &'static str = "https://www.quandl.com/api/v3/datasets";
 
 /// Parameters for the request to Quandl API
-pub struct QuandlRequest<'a> {
+pub struct DatasetDataCall<'a> {
     /// Reference to Quandl struct. This information will be available for all
     /// Quandl requests.
     pub quandl: &'a Quandl,
@@ -39,9 +40,9 @@ pub struct QuandlRequest<'a> {
     pub transform: Option<Transform>,
 }
 
-impl<'a> Debug for QuandlRequest<'a> {
+impl<'a> Debug for DatasetDataCall<'a> {
     fn fmt(&self, fmt: &mut Formatter) -> fmt::Result {
-        fmt.debug_struct("QuandlRequest")
+        fmt.debug_struct("DatasetDataCall")
            .field("quandl", &self.quandl)
            .field("database_code", &self.database_code)
            .field("dataset_code", &self.dataset_code)
@@ -142,27 +143,27 @@ impl Display for Transform {
     }
 }
 
-impl<'a> QuandlRequest<'a> {
-    /// Creates a new `QuandlRequest` using the specified database_code and dataset code.
+impl<'a> DatasetDataCall<'a> {
+    /// Creates a new `DatasetDataCall` using the specified database_code and dataset code.
     /// All other parameters as taken from the default implementation, setting the optional
     /// parameters to `None`.
     /// You can use `limit=n` to get only the first `n` rows of your dataset. Use `limit=1` to get
     /// the latest observation for any dataset.
-    pub fn limit(mut self, limit: u64) -> QuandlRequest<'a> {
+    pub fn limit(mut self, limit: u64) -> DatasetDataCall<'a> {
         self.limit = Some(limit);
         self
     }
 
     /// You can use `rows=n` to get only the first `n` rows of your dataset. Use `rows=1` to get
     /// the latest observation for any dataset.
-    pub fn rows(mut self, rows: u64) -> QuandlRequest<'a> {
+    pub fn rows(mut self, rows: u64) -> DatasetDataCall<'a> {
         self.rows = Some(rows);
         self
     }
 
     /// Request a specific column by passing the `column_index=n` parameter. Column 0 is the
     /// date column and is always returned. Data begins at column 1.
-    pub fn column_index(mut self, indx: u64) -> QuandlRequest<'a> {
+    pub fn column_index(mut self, indx: u64) -> DatasetDataCall<'a> {
         self.column_index = Some(indx);
         self
     }
@@ -170,20 +171,20 @@ impl<'a> QuandlRequest<'a> {
 
     /// Retrieve data within a specific date range, by setting start date for your query.
     /// Takes either a `&str` in the format of `yyyy-mm-dd` or a `chrono::NaiveDate` as input.
-    pub fn start_date<T: ?Sized + DateInput>(mut self, date: &T) -> Result<QuandlRequest<'a>> {
+    pub fn start_date<T: ?Sized + DateInput>(mut self, date: &T) -> Result<DatasetDataCall<'a>> {
         try!(date.set_start_date(&mut self));
         Ok(self)
     }
 
     /// Retrieve data within a specific date range, by setting end date for your query.
     /// Takes either a `&str` in the format of `yyyy-mm-dd` or a `chrono::NaiveDate` as input.
-    pub fn end_date<T: ?Sized + DateInput>(mut self, date: &T) -> Result<QuandlRequest<'a>> {
+    pub fn end_date<T: ?Sized + DateInput>(mut self, date: &T) -> Result<DatasetDataCall<'a>> {
         try!(date.set_end_date(&mut self));
         Ok(self)
     }
 
     /// Select the sort order. The default sort order is `Desc`.
-    pub fn order(mut self, order: Order) -> QuandlRequest<'a> {
+    pub fn order(mut self, order: Order) -> DatasetDataCall<'a> {
         self.order = Some(order);
         self
     }
@@ -193,7 +194,7 @@ impl<'a> QuandlRequest<'a> {
     /// to monthly, you will get a sample of the original dataset where the observation for each
     /// month is the last data point available for that month. Set collapse with:
     /// `collapse=none|daily|weekly|monthly|quarterly|annual`.
-    pub fn collapse(mut self, collapse: Collapse) -> QuandlRequest<'a> {
+    pub fn collapse(mut self, collapse: Collapse) -> DatasetDataCall<'a> {
         self.collapse = Some(collapse);
         self
     }
@@ -202,7 +203,7 @@ impl<'a> QuandlRequest<'a> {
     /// available are row-on-row change, percentage change, cumulative sum, and normalize
     /// (set starting value at 100). Set the transform parameter with:
     /// `transform=none|diff|rdiff|cumul|normalize`.
-    pub fn transform(mut self, transform: Transform) -> QuandlRequest<'a> {
+    pub fn transform(mut self, transform: Transform) -> DatasetDataCall<'a> {
         self.transform = Some(transform);
         self
     }
@@ -250,9 +251,9 @@ impl<'a> QuandlRequest<'a> {
         }
     }
 
-    /// Create a default QuandlRequest
-    pub fn default(quandl: &'a Quandl) -> QuandlRequest<'a> {
-        QuandlRequest {
+    /// Create a default DatasetDataCall
+    pub fn default(quandl: &'a Quandl) -> DatasetDataCall<'a> {
+        DatasetDataCall {
             quandl: quandl,
             database_code: String::from(""),
             dataset_code: String::from(""),
@@ -268,33 +269,33 @@ impl<'a> QuandlRequest<'a> {
     }
 }
 
-/// Allow for multiple types to be used as input to the `start_date` and `end_date` `QuandlRequest`
+/// Allow for multiple types to be used as input to the `start_date` and `end_date` `DatasetDataCall`
 /// parameters.
 pub trait DateInput {
-    /// Set the `start_date` for `QuandlRequest`.
-    fn set_start_date(&self, quandl_request: &mut QuandlRequest) -> Result<()>;
-    /// Set the `end_date` for `QuandlRequest`.
-    fn set_end_date(&self, quandl_request: &mut QuandlRequest) -> Result<()>;
+    /// Set the `start_date` for `DatasetDataCall`.
+    fn set_start_date(&self, quandl_request: &mut DatasetDataCall) -> Result<()>;
+    /// Set the `end_date` for `DatasetDataCall`.
+    fn set_end_date(&self, quandl_request: &mut DatasetDataCall) -> Result<()>;
 }
 
 impl DateInput for str {
-    fn set_start_date(&self, quandl_request: &mut QuandlRequest) -> Result<()> {
+    fn set_start_date(&self, quandl_request: &mut DatasetDataCall) -> Result<()> {
         let date = try!(self.parse::<NaiveDate>());
         date.set_start_date(quandl_request)
     }
-    fn set_end_date(&self, quandl_request: &mut QuandlRequest) -> Result<()> {
+    fn set_end_date(&self, quandl_request: &mut DatasetDataCall) -> Result<()> {
         let date = try!(self.parse::<NaiveDate>());
         date.set_end_date(quandl_request)
     }
 }
 
 impl DateInput for NaiveDate {
-    fn set_start_date(&self, quandl_request: &mut QuandlRequest) -> Result<()> {
+    fn set_start_date(&self, quandl_request: &mut DatasetDataCall) -> Result<()> {
         try!(validate_date(&Some(*self), &quandl_request.end_date));
         quandl_request.start_date = Some(*self);
         Ok(())
     }
-    fn set_end_date(&self, quandl_request: &mut QuandlRequest) -> Result<()> {
+    fn set_end_date(&self, quandl_request: &mut DatasetDataCall) -> Result<()> {
         try!(validate_date(&quandl_request.start_date, &Some(*self)));
         quandl_request.end_date = Some(*self);
         Ok(())
@@ -326,16 +327,16 @@ fn set_query_pair<'a, T: Display>(query: &mut Vec<(&'a str, String)>,
 mod tests {
     use super::*;
     use url::Url;
-    use super::super::{NaiveDate, Quandl};
+    use {NaiveDate, Quandl};
 
-    fn new_quandl_request(quandl: &Quandl) -> QuandlRequest {
-        quandl.new_request("WIKI", "AAPL")
+    fn new_dataset_data_call(quandl: &Quandl) -> DatasetDataCall {
+        quandl.new_dataset_data_call("WIKI", "AAPL")
     }
 
     #[test]
-    fn test_new_quandl_request() {
+    fn test_new_dataset_data_call() {
         let q = Quandl::new();
-        let qr = new_quandl_request(&q);
+        let qr = new_dataset_data_call(&q);
         assert_eq!(qr.database_code, String::from("WIKI"));
         assert_eq!(qr.dataset_code, String::from("AAPL"));
         assert_eq!(qr.limit, None);
@@ -344,21 +345,21 @@ mod tests {
     #[test]
     fn test_limit() {
         let q = Quandl::new();
-        let qr = new_quandl_request(&q).limit(12);
+        let qr = new_dataset_data_call(&q).limit(12);
         assert_eq!(qr.limit, Some(12));
     }
 
     #[test]
     fn test_rows() {
         let q = Quandl::new();
-        let qr = new_quandl_request(&q).rows(2);
+        let qr = new_dataset_data_call(&q).rows(2);
         assert_eq!(qr.rows, Some(2));
     }
 
     #[test]
     fn test_column_index() {
         let q = Quandl::new();
-        let qr = new_quandl_request(&q).column_index(0);
+        let qr = new_dataset_data_call(&q).column_index(0);
         assert_eq!(qr.column_index, Some(0));
     }
 
@@ -366,7 +367,7 @@ mod tests {
     fn test_order() {
         use super::Order::*;
         let q = Quandl::new();
-        let qr = new_quandl_request(&q).order(Asc);
+        let qr = new_dataset_data_call(&q).order(Asc);
         assert_eq!(qr.order, Some(Asc));
     }
 
@@ -374,7 +375,7 @@ mod tests {
     fn test_collapse() {
         use super::Collapse::*;
         let q = Quandl::new();
-        let qr = new_quandl_request(&q).collapse(Daily);
+        let qr = new_dataset_data_call(&q).collapse(Daily);
         assert_eq!(qr.collapse, Some(Daily));
     }
 
@@ -382,7 +383,7 @@ mod tests {
     fn test_transform() {
         use super::Transform::*;
         let q = Quandl::new();
-        let qr = new_quandl_request(&q).transform(Rdiff);
+        let qr = new_dataset_data_call(&q).transform(Rdiff);
         assert_eq!(qr.transform, Some(Rdiff));
     }
 
@@ -394,7 +395,7 @@ mod tests {
         let url = Url::parse(u_str).unwrap();
 
         let q = Quandl::new();
-        let qr = new_quandl_request(&q)
+        let qr = new_dataset_data_call(&q)
                      .order(Order::Asc)
                      .limit(10u64)
                      .collapse(Collapse::Daily)
@@ -405,14 +406,14 @@ mod tests {
                      .unwrap()
                      .end_date("2015-03-10")
                      .unwrap();
-        assert_eq!(qr.get_url(), url);
+        assert_eq!(qr.get_url().unwrap(), url);
     }
 
     #[test]
     fn test_validate_date_err() {
         // from str
         let q = Quandl::new();
-        let qr = new_quandl_request(&q)
+        let qr = new_dataset_data_call(&q)
                      .start_date("2015-02-10")
                      .unwrap()
                      .end_date("2015-01-10");
@@ -422,7 +423,7 @@ mod tests {
 
         // from NaiveDate
         let q = Quandl::new();
-        let qr = new_quandl_request(&q)
+        let qr = new_dataset_data_call(&q)
                      .start_date(&NaiveDate::from_ymd(2015, 02, 10))
                      .unwrap()
                      .end_date(&NaiveDate::from_ymd(2015, 01, 10));
@@ -432,7 +433,7 @@ mod tests {
 
         // from NaiveDate + str
         let q = Quandl::new();
-        let qr = new_quandl_request(&q)
+        let qr = new_dataset_data_call(&q)
                      .start_date(&NaiveDate::from_ymd(2015, 02, 10))
                      .unwrap()
                      .end_date("2015-01-10");
@@ -442,7 +443,7 @@ mod tests {
 
         // from NaiveDate + str
         let q = Quandl::new();
-        let qr = new_quandl_request(&q)
+        let qr = new_dataset_data_call(&q)
                      .end_date(&NaiveDate::from_ymd(2015, 02, 10))
                      .unwrap()
                      .start_date("2015-03-10");
@@ -452,7 +453,7 @@ mod tests {
 
         // correct params should not have an error
         let q = Quandl::new();
-        let qr = new_quandl_request(&q)
+        let qr = new_dataset_data_call(&q)
                      .start_date(&NaiveDate::from_ymd(2015, 02, 10))
                      .unwrap()
                      .end_date("2015-03-10");
@@ -479,7 +480,7 @@ mod tests {
     #[test]
     fn test_quandl_works() {
         let q = Quandl::new();
-        let res = new_quandl_request(&q).rows(1u64).run();
+        let res = new_dataset_data_call(&q).rows(1u64).run();
         if res.is_err() {
             panic!("quandl req failed: {:?}", res)
         }

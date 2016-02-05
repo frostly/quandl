@@ -24,7 +24,7 @@ extern crate hyper;
 extern crate chrono;
 
 pub use quandl::Quandl;
-pub use quandl_request::*;
+pub use requests::dataset_data_call::*;
 pub use error::{Error, Result};
 pub use serde_json::Value as JsonValue;
 pub use chrono::NaiveDate as NaiveDate;
@@ -32,7 +32,7 @@ pub use chrono::NaiveDate as NaiveDate;
 /// Handles common information across requests.
 pub mod quandl;
 /// Handles building and sending requests to Quandl
-pub mod quandl_request;
+pub mod requests;
 /// Errors
 pub mod error;
 

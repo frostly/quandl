@@ -1,6 +1,6 @@
 use std::fmt::{self, Formatter, Debug};
 use hyper;
-use super::QuandlRequest;
+use requests::DatasetDataCall;
 use HttpClient;
 
 /// Parameters for Quandl
@@ -17,14 +17,19 @@ impl Quandl {
         Default::default()
     }
 
-    /// Creates a new `QuandlRequest` using the specified database_code and dataset code.
+    /// Creates a new `DatasetDataCall` using the specified database_code and dataset code.
     /// All other parameters as taken from the default implementation, setting the optional
     /// parameters to `None`.
-    pub fn new_request(&self, database_code: &str, dataset_code: &str) -> QuandlRequest {
-        QuandlRequest {
+    pub fn new_dataset_data_call(&self,
+                                 database_code: &str,
+                                 dataset_code: &str)
+                                 -> DatasetDataCall {
+        DatasetDataCall {
             database_code: String::from(database_code),
             dataset_code: String::from(dataset_code),
-            ..QuandlRequest::default(&self)
+            ..DatasetDataCall::default(&self)
+        }
+    }
         }
     }
 
@@ -46,7 +51,7 @@ impl Default for Quandl {
 
 impl Debug for Quandl {
     fn fmt(&self, fmt: &mut Formatter) -> fmt::Result {
-        fmt.debug_struct("QuandlRequest")
+        fmt.debug_struct("Quandl")
            .field("api_key", &self.api_key)
            .finish()
     }
