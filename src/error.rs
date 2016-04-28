@@ -2,6 +2,8 @@ use hyper;
 use serde_json;
 use chrono;
 use url;
+use zip;
+use quick_csv;
 
 /// Result type often returned from methods that can have quandl `Error`s.
 pub type Result<T> = ::std::result::Result<T, Error>;
@@ -46,6 +48,27 @@ quick_error! {
             from()
             description("url parse error")
             display("url parse error: {}", err)
+            cause(err)
+        }
+        /// io Error
+        Io(err: ::std::io::Error) {
+            from()
+            description("io error")
+            display("io error: {}", err)
+            cause(err)
+        }
+        /// Zip Error
+        Zip(err: zip::result::ZipError){
+            from()
+            description("zip error")
+            display("io error: {}", err)
+            cause(err)
+        }
+        /// Csv Error
+        Csv(err: quick_csv::error::Error){
+            from()
+            description("csv error")
+            display("csv error: {}", err)
             cause(err)
         }
     }

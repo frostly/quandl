@@ -1,6 +1,6 @@
 use std::fmt::{self, Formatter, Debug};
 use hyper;
-use requests::DatasetDataCall;
+use requests::{DatasetDataCall, DatasetListCall};
 use HttpClient;
 
 /// Parameters for Quandl
@@ -30,12 +30,29 @@ impl Quandl {
             ..DatasetDataCall::default(&self)
         }
     }
+
+    /// Creates a new `Database` request for listing the items
+    /// within the specified dataset
+    pub fn new_dataset_list_call(&self, database_code: &str) -> DatasetListCall {
+        DatasetListCall {
+            database_code: String::from(database_code),
+            quandl: &self,
         }
     }
 
     /// Quandl API key. Used for premium databases and/or increased usage limits.
     pub fn api_key(mut self, key: &str) -> Quandl {
         self.api_key = Some(String::from(key));
+        self
+    }
+
+    /// Allow test code to modify http_client and set with a connector
+    #[cfg(test)]
+    pub fn set_http_client_with_connector<C, S>(mut self, connector: C) -> Self
+        where C: hyper::net::NetworkConnector<Stream = S> + Send + Sync + 'static,
+              S: hyper::net::NetworkStream + Send
+    {
+        self.http_client = hyper::Client::with_connector(connector);
         self
     }
 }
