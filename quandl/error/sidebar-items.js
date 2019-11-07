@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Error","Error enum for quandl lib"]],"type":[["Result","Result type often returned from methods that can have quandl `Error`s."]]});

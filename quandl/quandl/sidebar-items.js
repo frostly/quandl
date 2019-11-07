@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Quandl","Parameters for Quandl"]]});
