@@ -1,7 +1,3 @@
-use hyper;
-use serde_json;
-use chrono;
-
 /// Result type often returned from methods that can have quandl `Error`s.
 pub type Result<T> = ::std::result::Result<T, Error>;
 
