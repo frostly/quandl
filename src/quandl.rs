@@ -1,11 +1,11 @@
-use std::fmt::{self, Formatter, Debug};
-use hyper;
 use super::QuandlRequest;
+use hyper_tls::HttpsConnector;
+use std::fmt::{self, Debug, Formatter};
 
 /// Parameters for Quandl
 pub struct Quandl {
     /// Http client
-    pub http_client: hyper::Client,
+    pub http_client: hyper::Client<HttpsConnector<hyper::client::HttpConnector>>,
     /// Quandl API key. Used for premium databases and/or increased usage limits
     pub api_key: Option<String>,
 }
@@ -36,8 +36,9 @@ impl Quandl {
 
 impl Default for Quandl {
     fn default() -> Quandl {
+        let https = HttpsConnector::new();
         Quandl {
-            http_client: hyper::Client::new(),
+            http_client: hyper::Client::builder().build::<_, hyper::Body>(https),
             api_key: None,
         }
     }
@@ -46,7 +47,7 @@ impl Default for Quandl {
 impl Debug for Quandl {
     fn fmt(&self, fmt: &mut Formatter) -> fmt::Result {
         fmt.debug_struct("QuandlRequest")
-           .field("api_key", &self.api_key)
-           .finish()
+            .field("api_key", &self.api_key)
+            .finish()
     }
 }
